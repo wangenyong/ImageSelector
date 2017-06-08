@@ -10,9 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -25,10 +23,10 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
+import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -45,6 +43,7 @@ import java.util.ArrayList;
 
 public class ImageSelectorActivity extends AppCompatActivity {
 
+    private Toolbar mToolbar;
     private TextView tvTime;
     private TextView tvFolderName;
     private TextView tvConfirm;
@@ -98,11 +97,15 @@ public class ImageSelectorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_select);
 
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(getString(R.string.image));
+
         Intent intent = getIntent();
         mMaxCount = intent.getIntExtra(Constants.MAX_SELECT_COUNT, 0);
         isSingle = intent.getBooleanExtra(Constants.IS_SINGLE, false);
 
-        setStatusBarColor();
         initView();
         initListener();
         initImageList();
@@ -111,15 +114,12 @@ public class ImageSelectorActivity extends AppCompatActivity {
         setSelectImageCount(0);
     }
 
-    /**
-     * 修改状态栏颜色
-     */
-    private void setStatusBarColor() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Window window = getWindow();
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(Color.parseColor("#373c3d"));
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        if (menuItem.getItemId() == android.R.id.home) {
+            finish();
         }
+        return super.onOptionsItemSelected(menuItem);
     }
 
     private void initView() {
@@ -135,13 +135,6 @@ public class ImageSelectorActivity extends AppCompatActivity {
     }
 
     private void initListener() {
-        findViewById(R.id.btn_back).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-
         btnPreview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
