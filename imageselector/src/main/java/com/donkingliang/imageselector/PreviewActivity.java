@@ -16,6 +16,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -34,12 +36,11 @@ import static android.animation.ObjectAnimator.ofFloat;
 
 public class PreviewActivity extends AppCompatActivity {
 
+    private Toolbar mToolbar;
     private MyViewPager vpImage;
-    private TextView tvIndicator;
     private TextView tvConfirm;
     private FrameLayout btnConfirm;
     private TextView tvSelect;
-    private RelativeLayout rlTopBar;
     private RelativeLayout rlBottomBar;
 
     //tempImages和tempSelectImages用于图片列表数据的页面传输。
@@ -75,6 +76,10 @@ public class PreviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview);
 
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         setStatusBarVisible(true);
         mImages = tempImages;
         tempImages = null;
@@ -94,37 +99,37 @@ public class PreviewActivity extends AppCompatActivity {
         mUnSelectDrawable = new BitmapDrawable(resources, unSelectBitmap);
         mUnSelectDrawable.setBounds(0, 0, unSelectBitmap.getWidth(), unSelectBitmap.getHeight());
 
-        setStatusBarColor();
         initView();
         initListener();
         initViewPager();
 
-        tvIndicator.setText(1 + "/" + mImages.size());
+        getSupportActionBar().setTitle(1 + "/" + mImages.size());
         changeSelect(mImages.get(0));
         vpImage.setCurrentItem(intent.getIntExtra(Constants.POSITION, 0));
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        if (menuItem.getItemId() == android.R.id.home) {
+            finish();
+        }
+        return super.onOptionsItemSelected(menuItem);
+    }
+
+
     private void initView() {
         vpImage = (MyViewPager) findViewById(R.id.vp_image);
-        tvIndicator = (TextView) findViewById(R.id.tv_indicator);
         tvConfirm = (TextView) findViewById(R.id.tv_confirm);
         btnConfirm = (FrameLayout) findViewById(R.id.btn_confirm);
         tvSelect = (TextView) findViewById(R.id.tv_select);
-        rlTopBar = (RelativeLayout) findViewById(R.id.rl_top_bar);
         rlBottomBar = (RelativeLayout) findViewById(R.id.rl_bottom_bar);
 
-        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) rlTopBar.getLayoutParams();
+        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) mToolbar.getLayoutParams();
         lp.topMargin = getStatusBarHeight(this);
-        rlTopBar.setLayoutParams(lp);
+        mToolbar.setLayoutParams(lp);
     }
 
     private void initListener() {
-        findViewById(R.id.btn_back).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
         btnConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -163,7 +168,7 @@ public class PreviewActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                tvIndicator.setText(position + 1 + "/" + mImages.size());
+                getSupportActionBar().setTitle(position + 1 + "/" + mImages.size());
                 changeSelect(mImages.get(position));
             }
 
@@ -219,16 +224,16 @@ public class PreviewActivity extends AppCompatActivity {
         isShowBar = true;
         setStatusBarVisible(true);
         //添加延时，保证StatusBar完全显示后再进行动画。
-        rlTopBar.postDelayed(new Runnable() {
+        mToolbar.postDelayed(new Runnable() {
             @Override
             public void run() {
-                ObjectAnimator animator = ofFloat(rlTopBar, "translationY",
-                        rlTopBar.getTranslationY(), 0).setDuration(300);
+                ObjectAnimator animator = ofFloat(mToolbar, "translationY",
+                        mToolbar.getTranslationY(), 0).setDuration(300);
                 animator.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animation) {
                         super.onAnimationStart(animation);
-                        rlTopBar.setVisibility(View.VISIBLE);
+                        mToolbar.setVisibility(View.VISIBLE);
                     }
                 });
                 animator.start();
@@ -243,15 +248,15 @@ public class PreviewActivity extends AppCompatActivity {
      */
     private void hideBar() {
         isShowBar = false;
-        ObjectAnimator animator = ObjectAnimator.ofFloat(rlTopBar, "translationY",
-                0, -rlTopBar.getHeight()).setDuration(300);
+        ObjectAnimator animator = ObjectAnimator.ofFloat(mToolbar, "translationY",
+                0, -mToolbar.getHeight()).setDuration(300);
         animator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                rlTopBar.setVisibility(View.GONE);
+                mToolbar.setVisibility(View.GONE);
                 //添加延时，保证rlTopBar完全隐藏后再隐藏StatusBar。
-                rlTopBar.postDelayed(new Runnable() {
+                mToolbar.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         setStatusBarVisible(false);
